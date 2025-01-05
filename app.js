@@ -87,3 +87,109 @@ export default function TechFlowDiagram() {
 <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
       <TechFlowDiagram />
     </div>
+
+
+
+// work flow'
+
+import { Check } from 'lucide-react'
+import { Card } from "@/components/ui/card"
+
+interface WorkExperienceProps {
+  company: string
+  location: string
+  startDate: string
+  endDate?: string
+  isCurrent?: boolean
+  role: string
+  description?: string
+}
+
+interface TimelineItemProps {
+  experience: WorkExperienceProps
+}
+
+function TimelineItem({ experience }: TimelineItemProps) {
+  const { company, location, startDate, endDate, isCurrent, role, description } = experience
+  
+  return (
+    <div className="relative flex gap-4 pb-12 last:pb-0">
+      {/* Timeline line */}
+      <div className="absolute left-[15px] top-[30px] h-full w-[2px] bg-gray-200 last:hidden" />
+      
+      {/* Status indicator */}
+      <div className="relative z-10">
+        {isCurrent ? (
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100">
+            <Check className="h-5 w-5 text-green-600" />
+          </div>
+        ) : (
+          <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-gray-300 bg-white">
+            <div className="h-3 w-3 rounded-full bg-gray-300" />
+          </div>
+        )}
+      </div>
+
+      {/* Content */}
+      <div className="flex-1">
+        <Card className="p-4">
+          <div className="mb-2 flex items-start justify-between">
+            <div>
+              <h3 className="font-semibold text-lg">{company}</h3>
+              <p className="text-sm text-gray-600">{location}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm font-medium">
+                {startDate}
+                {endDate ? ` - ${endDate}` : ' - Present'}
+              </p>
+              {isCurrent && (
+                <span className="inline-block rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-600">
+                  Current
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="mt-2">
+            <p className="font-medium">{role}</p>
+            {description && <p className="mt-1 text-sm text-gray-600">{description}</p>}
+          </div>
+        </Card>
+      </div>
+    </div>
+  )
+}
+
+export function WorkTimeline() {
+  const experiences: WorkExperienceProps[] = [
+    {
+      company: "Pinelabs",
+      location: "Noida",
+      startDate: "Jan 2024",
+      role: "Software Engineer",
+      isCurrent: true,
+      description: "Working on frontend development using React and Next.js"
+    },
+    {
+      company: "Chetu India",
+      location: "Noida",
+      startDate: "Jan 2022",
+      endDate: "Dec 2023",
+      role: "Software Engineer",
+      description: "Worked on various client projects using React and related technologies"
+    }
+  ]
+
+  return (
+    <div className="max-w-2xl p-6">
+      <h2 className="mb-8 text-2xl font-bold">Work Experience</h2>
+      <div className="space-y-0">
+        {experiences.map((exp, index) => (
+          <TimelineItem key={index} experience={exp} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+
