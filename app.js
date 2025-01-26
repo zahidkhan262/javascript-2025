@@ -193,3 +193,168 @@ export function WorkTimeline() {
 }
 
 
+// sidebar
+
+import React, { useState } from "react";
+import { ChevronDown, ChevronUp, Home, Compass, Subscriptions, Library, History, Settings, HelpCircle } from "lucide-react";
+import { menuItems } from "./data";
+
+const Sidebar = () => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [openSubmenuId, setOpenSubmenuId] = useState(null);
+
+  const toggleSidebar = () => {
+    setIsExpanded(!isExpanded);
+  };
+
+  const handleSubmenuToggle = (id) => {
+    setOpenSubmenuId(openSubmenuId === id ? null : id);
+  };
+
+  const getIcon = (title) => {
+    switch (title) {
+      case "Home":
+        return <Home className="mr-2" />;
+      case "Explore":
+        return <Compass className="mr-2" />;
+      case "Subscriptions":
+        return <Subscriptions className="mr-2" />;
+      case "Library":
+        return <Library className="mr-2" />;
+      case "History":
+        return <History className="mr-2" />;
+      case "Settings":
+        return <Settings className="mr-2" />;
+      case "Help":
+        return <HelpCircle className="mr-2" />;
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className={`flex flex-col bg-gray-900 text-white h-screen w-${isExpanded ? "64" : "20"} transition-width duration-300`}>
+      <div className="p-4">
+        <button onClick={toggleSidebar} className="focus:outline-none">
+          {isExpanded ? "Collapse" : "Expand"}
+        </button>
+      </div>
+      <nav>
+        <ul>
+          {menuItems.map((item) => (
+            <li key={item.id} className="p-4 hover:bg-gray-700">
+              <div
+                className="flex items-center justify-between cursor-pointer"
+                onClick={() => item.type === "submenu" && handleSubmenuToggle(item.id)}
+              >
+                <div className="flex items-center">
+                  {getIcon(item.title)}
+                  {isExpanded && item.title}
+                </div>
+                {item.type === "submenu" && isExpanded && (
+                  <span>{openSubmenuId === item.id ? <ChevronUp /> : <ChevronDown />}</span>
+                )}
+              </div>
+              {item.type === "submenu" && openSubmenuId === item.id && isExpanded && (
+                <ul className="pl-6 mt-2">
+                  {item.submenu.map((subItem) => (
+                    <li key={subItem.id} className="p-2 hover:bg-gray-600">
+                      <a href={subItem.path} className="flex items-center">
+                        {subItem.title}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </div>
+  );
+};
+
+export default Sidebar;
+
+
+// data.js
+export const menuItems = [
+  {
+    id: 1,
+    title: "Home",
+    path: "/",
+    type: "link",
+  },
+  {
+    id: 2,
+    title: "Explore",
+    path: "/explore",
+    type: "link",
+  },
+  {
+    id: 3,
+    title: "Subscriptions",
+    path: "/subscriptions",
+    type: "link",
+  },
+  {
+    id: 4,
+    title: "Library",
+    path: "/library",
+    type: "link",
+  },
+  {
+    id: 5,
+    title: "History",
+    path: "/history",
+    type: "link",
+  },
+  {
+    id: 6,
+    title: "Settings",
+    path: "/settings",
+    type: "submenu",
+    submenu: [
+      {
+        id: 61,
+        title: "Account",
+        path: "/settings/account",
+        type: "link",
+      },
+      {
+        id: 62,
+        title: "Privacy",
+        path: "/settings/privacy",
+        type: "link",
+      },
+      {
+        id: 63,
+        title: "Notifications",
+        path: "/settings/notifications",
+        type: "link",
+      },
+    ],
+  },
+  {
+    id: 7,
+    title: "Help",
+    path: "/help",
+    type: "submenu",
+    submenu: [
+      {
+        id: 71,
+        title: "FAQ",
+        path: "/help/faq",
+        type: "link",
+      },
+      {
+        id: 72,
+        title: "Contact Us",
+        path: "/help/contact",
+        type: "link",
+      },
+    ],
+  },
+];
+
+
