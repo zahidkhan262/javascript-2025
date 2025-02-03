@@ -3,6 +3,113 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { BoxIcon, GitBranchIcon, CodepenIcon, DatabaseIcon, BeanIcon, DribbbleIcon, Redo2Icon, WindIcon, TypeIcon, MailIcon, LinkedinIcon, ZapIcon, GitGraphIcon, ArrowRightIcon } from 'lucide-react'
 
+
+const columns = [
+  { label: "ID", accessor: "id" },
+  { label: "Name", accessor: "name" },
+  { label: "Age", accessor: "age" },
+];
+
+// Sample data
+const data = [
+  { id: 1, name: "Alice", age: 25 },
+  { id: 2, name: "Bob", age: 30 },
+  { id: 3, name: "Charlie", age: 28 },
+];
+
+import React, { useState } from "react";
+
+// Define column and data types
+interface Column {
+  label: string;
+  accessor: string;
+}
+
+interface TableProps {
+  columns: Column[];
+  data: Record<string, any>[];
+}
+
+const Table: React.FC<TableProps> = ({ columns, data }) => {
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [sortColumn, setSortColumn] = useState<string | null>(null);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+
+  // Sorting function
+  const handleSort = (column: string) => {
+    const newOrder = sortColumn === column && sortOrder === "asc" ? "desc" : "asc";
+    setSortColumn(column);
+    setSortOrder(newOrder);
+  };
+
+  // Apply sorting
+  const sortedData = [...data].sort((a, b) => {
+    if (!sortColumn) return 0;
+    if (a[sortColumn] < b[sortColumn]) return sortOrder === "asc" ? -1 : 1;
+    if (a[sortColumn] > b[sortColumn]) return sortOrder === "asc" ? 1 : -1;
+    return 0;
+  });
+
+  // Apply search filtering
+  const filteredData = sortedData.filter((row) =>
+    columns.some((col) =>
+      row[col.accessor]?.toString().toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  );
+
+  return (
+    <div className="container mx-auto p-4">
+      {/* Search Input */}
+      <input
+        type="text"
+        placeholder="Search..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+
+      {/* Responsive Table */}
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse bg-white shadow-lg rounded-lg">
+          <thead className="bg-blue-600 text-white">
+            <tr>
+              {columns.map((col) => (
+                <th
+                  key={col.accessor}
+                  onClick={() => handleSort(col.accessor)}
+                  className="p-3 text-left cursor-pointer"
+                >
+                  {col.label}{" "}
+                  {sortColumn === col.accessor ? (sortOrder === "asc" ? "↑" : "↓") : ""}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {filteredData.map((row, rowIndex) => (
+              <tr
+                key={rowIndex}
+                className="border-b hover:bg-gray-100 transition duration-200"
+              >
+                {columns.map((col) => (
+                  <td key={col.accessor} className="p-3">
+                    {row[col.accessor]}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+export default Table;
+
+
+
+
 export default function TechFlowDiagram() {
   return (
     <div className="w-full max-w-6xl mx-auto p-4">
