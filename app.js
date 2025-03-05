@@ -1,5 +1,5 @@
 
-
+https://strapi.unicorncurrencies.com/api/landing-banner?populate=*
 import React, { useState, useCallback } from "react";
 import { Camera, Edit } from "lucide-react";
 import Cropper from "react-easy-crop";
