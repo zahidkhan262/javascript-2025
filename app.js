@@ -1,4 +1,189 @@
 
+
+import React, { useState, useCallback } from "react";
+import { Camera, Edit } from "lucide-react";
+import Cropper from "react-easy-crop";
+import CustomModal from "../modal/custom-modal";
+
+const getCroppedImg = async (imageSrc, croppedAreaPixels, zoom, rotation) => {
+  const image = new Image();
+  image.src = imageSrc;
+  await new Promise((resolve) => (image.onload = resolve));
+
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+
+  canvas.width = croppedAreaPixels.width;
+  canvas.height = croppedAreaPixels.height;
+
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.rotate((rotation * Math.PI) / 180);
+  ctx.drawImage(
+    image,
+    croppedAreaPixels.x,
+    croppedAreaPixels.y,
+    croppedAreaPixels.width,
+    croppedAreaPixels.height,
+    -croppedAreaPixels.width / 2,
+    -croppedAreaPixels.height / 2,
+    croppedAreaPixels.width,
+    croppedAreaPixels.height
+  );
+
+  return new Promise((resolve) => {
+    canvas.toBlob((blob) => {
+      resolve(URL.createObjectURL(blob));
+    }, "image/jpeg");
+  });
+};
+
+
+const ProfileImageUploader = ({ onClose ,setProfileImage,profileImage,preview, setPreview}) => {
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [rotation, setRotation] = useState(0);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null); // ✅ Store crop area
+
+  // Handle Image Upload
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setProfileImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+console.log("profileImage",profileImage)
+  // Store Cropped Area
+  const onCropComplete = useCallback((_, croppedAreaPixels) => {
+    setCroppedAreaPixels(croppedAreaPixels);
+  }, []);
+
+  // Handle Crop & Save
+  const handleCropComplete = async () => {
+    if (!profileImage || !croppedAreaPixels) return; // ✅ Ensure valid crop data
+
+    const croppedImage = await getCroppedImg(
+      profileImage,
+      croppedAreaPixels,
+      zoom,
+      rotation
+    );
+    console.log(croppedImage,"croppedImage")
+    setPreview(croppedImage);
+  setProfileImage(null); 
+    onClose();
+  };
+
+  const openModal = (image = null) => {
+    if (image) {
+      setProfileImage(image); // Open modal with existing cropped image
+    }
+    
+  };
+
+  return (
+    <div className="flex flex-col items-center">
+      {!profileImage ? (
+        <label className="relative cursor-pointer">
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleImageChange}
+          />
+          <div className="w-24 h-24 rounded-full bg-gray-200 border-2 border-gray-300 flex items-center justify-center overflow-hidden relative">
+            {preview ? (
+              <img
+                src={preview}
+                alt="Profile Preview"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <Camera className="text-gray-500 text-3xl" />
+            )}
+          </div>
+        </label>
+      ) : (
+        ""
+      )}
+       {preview && (
+        <button
+          onClick={() => openModal(preview)}
+          className="absolute bottom-2 right-2 bg-white p-1 rounded-full shadow-lg hover:bg-gray-100"
+        >
+          <Edit className="text-gray-600" size={20} />
+        </button>
+      )}
+
+      {profileImage && (
+        <>
+          <div className="relative w-full h-[300px] bg-gray-100">
+            <Cropper
+              image={profileImage}
+              crop={crop}
+              zoom={zoom}
+              rotation={rotation}
+              aspect={1}
+              onCropChange={setCrop}
+              onZoomChange={setZoom}
+              onRotationChange={setRotation}
+              onCropComplete={onCropComplete} // ✅ Fix
+            />
+          </div>
+          <div className="mt-4 space-y-3">
+            <div className="flex flex-col items-center">
+              <label className="text-sm font-medium">Zoom</label>
+              <input
+                type="range"
+                min="1"
+                max="3"
+                step="0.1"
+                value={zoom}
+                onChange={(e) => setZoom(Number(e.target.value))}
+                className="w-48 accent-blue-600"
+              />
+            </div>
+
+            <div className="flex flex-col items-center">
+              <label className="text-sm font-medium">Rotate</label>
+              <input
+                type="range"
+                min="0"
+                max="360"
+                step="1"
+                value={rotation}
+                onChange={(e) => setRotation(Number(e.target.value))}
+                className="w-48 accent-blue-600"
+              />
+            </div>
+          </div>
+        </>
+      )}
+      <div className="flex justify-between items-center w-full mt-5">
+        <button onClick={onClose} className="px-4 py-2 bg-gray-400 text-white">cancel</button>
+        <button className="px-4 py-2 bg-purple-400 text-white" onClick={handleCropComplete}>Done & Save</button>
+      </div>
+    </div>
+  );
+};
+
+export default ProfileImageUploader;
+
+<div className="flex justify-center">
+            <div
+              onClick={handleOpenProfile}
+              className="w-24 h-24 rounded-full bg-gray-200 border-2 border-gray-300 flex items-center justify-center overflow-hidden relative"
+            >
+              {preview ? <img src={preview} alt="Profile Preview" className="w-full h-full object-cover" /> :
+              <Camera className="text-gray-500 text-3xl" />
+              }
+            </div>
+          </div>
+
+
 "use client"
 
 import { Card, CardContent } from "@/components/ui/card"
