@@ -1,4 +1,62 @@
+import { useMutation } from "@tanstack/react-query";
+import axiosInstance from "../utils/axiosInstance";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
+export const useMutationRequest = (options = {}) => {
+  const navigate = useNavigate();
+
+  return useMutation(
+    async ({ method, endpoint, data }) => {
+      const response = await axiosInstance({
+        method,
+        url: endpoint,
+        data,
+      });
+      return response.data;
+    },
+    {
+      onSuccess: (data) => {
+        console.log("Success:", data);
+
+        if (data.status) {
+          toast.success(data.message || "Success!");
+        }
+
+        // Navigate if route is provided in options
+        if (options.navigateTo) {
+          navigate(options.navigateTo);
+        }
+
+        // Custom success callback if needed
+        if (options.onSuccess) {
+          options.onSuccess(data);
+        }
+      },
+      onError: (error) => {
+        console.error("Error:", error);
+
+        const errorMessage =
+          error?.response?.data?.message || "Something went wrong!";
+        toast.error(errorMessage);
+
+        // Custom error callback if needed
+        if (options.onError) {
+          options.onError(error);
+        }
+      },
+    }
+  );
+};
+
+const registerUser = useMutationRequest({ navigateTo: ROUTES.LOGIN });
+
+const onSubmit = async (value) => {
+  registerUser.mutate({ method: "POST", endpoint: "/register", data: value });
+};
+
+
+//aaaaaaa
 https://strapi.unicorncurrencies.com/api/landing-banner?populate=*
 import React, { useState, useCallback } from "react";
 import { Camera, Edit } from "lucide-react";
