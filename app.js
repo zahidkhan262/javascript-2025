@@ -1,3 +1,80 @@
+
+const getCroppedImg = async (imageSrc, croppedAreaPixels, zoom, rotation,fileType) => {
+  const image = new Image();
+  image.src = imageSrc;
+  await new Promise((resolve) => (image.onload = resolve));
+
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+
+  canvas.width = croppedAreaPixels.width;
+  canvas.height = croppedAreaPixels.height;
+
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.rotate((rotation * Math.PI) / 180);
+  ctx.drawImage(
+    image,
+    croppedAreaPixels.x,
+    croppedAreaPixels.y,
+    croppedAreaPixels.width,
+    croppedAreaPixels.height,
+    -croppedAreaPixels.width / 2,
+    -croppedAreaPixels.height / 2,
+    croppedAreaPixels.width,
+    croppedAreaPixels.height
+  );
+
+  return new Promise((resolve) => {
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        console.error("Canvas is empty");
+        return;
+      }
+
+      // Determine the file extension from the MIME type
+      const extension = fileType.split("/")[1]; // "image/png" -> "png"
+      const fileName = `cropped-image.${extension}`;
+
+      // Convert blob to File
+      const file = new File([blob], fileName, { type: fileType });
+
+      resolve({ previewUrl: URL.createObjectURL(blob), file });
+    }, fileType);
+  });
+  
+};
+
+// Handle Image Upload
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    setSelectedFile(file?.type)
+    console.log(file,"file22")
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setProfileImage(reader.result);
+        console.log("reader",reader.result)
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCropComplete = async () => {
+    if (!profileImage || !croppedAreaPixels) return; // ✅ Ensure valid crop data
+    const { previewUrl, file }  = await getCroppedImg(
+      profileImage,
+      croppedAreaPixels,
+      zoom,
+      rotation,
+      selectedFile
+    );
+    console.log(previewUrl, "croppedImage",file);
+    setProfileImage(file);
+    setPreview(previewUrl)
+    onClose();
+  };
+
+
 import { useMutation } from "@tanstack/react-query";
 import axiosInstance from "../utils/axiosInstance";
 import { toast } from "react-toastify";
