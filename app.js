@@ -1,3 +1,185 @@
+//  start
+
+//backend
+
+const WebSocket = require('ws');
+
+function setupWebSocket(server) {
+    const wss = new WebSocket.Server({ server });
+
+    wss.on('connection', (ws) => {
+        console.log('New client connected');
+
+        ws.on('message', (message) => {
+            const data = JSON.parse(message);
+            
+            if (data.type === "start") {
+                console.log("Start animation request received");
+
+                const sendAnimationData = () => {
+                    if (ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({ type: "animation", position: Math.random() * 100 }));
+                        setTimeout(sendAnimationData, 1000); // Send animation data every second
+                    }
+                };
+                sendAnimationData();
+            } else if (data.type === "stop") {
+                console.log("Stop animation request received");
+                ws.close();
+            }
+        });
+
+        ws.on('close', () => console.log("Client disconnected"));
+    });
+
+    return wss;
+}
+
+module.exports = setupWebSocket;
+
+
+// in server.js file
+const setupWebSocket = require('./socket');
+const PORT =  9000;
+const server = http.createServer(app);
+setupWebSocket(server);
+
+server.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}...`)
+})
+
+
+
+
+// in frontend
+
+
+
+// make  a AppleAnimation component 
+
+
+import { useState, useEffect } from "react";
+
+const AppleAnimation = () => {
+  const [ws, setWs] = useState(null);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [animationClass, setAnimationClass] = useState("");
+
+  useEffect(() => {
+    const socket = new WebSocket("ws://localhost:9000");
+
+    socket.onopen = () => {
+      console.log("WebSocket Connected");
+      setWs(socket);
+    };
+
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.type === "animation") {
+        startAnimation();
+      }
+    };
+
+    socket.onclose = () => console.log("WebSocket Disconnected");
+    socket.onerror = (error) => console.error("WebSocket Error", error);
+
+    return () => socket.close();
+  }, []);
+
+  const startAnimation = () => {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ type: "start" }));
+    }
+    setIsAnimating(true);
+    setAnimationClass("animate-spread"); // Apply animation class
+  };
+
+  const stopAnimation = () => {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ type: "stop" }));
+    }
+    setIsAnimating(false);
+    setAnimationClass("");
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white">
+    <h1 className="text-3xl font-bold mb-6">Apple Intelligence</h1>
+
+    <div className="relative w-[600px] h-[300px] overflow-hidden">
+      <div className={`floating-gradient ${animationClass}`} />
+    </div>
+
+    <div className="mt-6 flex space-x-4">
+      <button
+        onClick={startAnimation}
+        className="px-6 py-2 bg-green-500 text-white rounded-lg shadow-md"
+      >
+        Start
+      </button>
+      <button
+        onClick={stopAnimation}
+        className="px-6 py-2 bg-red-500 text-white rounded-lg shadow-md"
+      >
+        Stop
+      </button>
+    </div>
+  </div>
+  );
+};
+
+export default AppleAnimation;
+
+//  in app.css
+
+
+.floating-gradient {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0%;
+  height: 30px;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 122, 255, 0) 0%,
+    rgba(0, 122, 255, 0.7) 15%,
+    rgba(175, 82, 222, 0.9) 40%,
+    rgba(255, 45, 85, 0.9) 60%,
+    rgba(255, 149, 0, 0.7) 85%,
+    rgba(255, 149, 0, 0) 100%
+  );
+  filter: blur(8px);
+  opacity: 0;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes spreadAnimation {
+  0% {
+    width: 0%;
+    opacity: 0.3;
+  }
+  50% {
+    width: 100%;
+    opacity: 1;
+  }
+  100% {
+    width: 0%;
+    opacity: 0;
+  }
+}
+.animate-spread {
+  animation: spreadAnimation 3s infinite ease-in-out;
+}
+// end now
+
+
+
+
+
+
+
+
+
 
 const getCroppedImg = async (imageSrc, croppedAreaPixels, zoom, rotation,fileType) => {
   const image = new Image();
