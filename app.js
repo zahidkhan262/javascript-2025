@@ -1,3 +1,41 @@
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { Loader2 } from "lucide-react"; // ShadCN recommends Lucide icons
+
+type ButtonVariant = "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
+
+interface CustomButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: ButtonVariant;
+  isLoading?: boolean;
+}
+
+const CustomButton: React.FC<CustomButtonProps> = ({
+  children,
+  variant = "default",
+  isLoading = false,
+  className = "",
+  ...props
+}) => {
+  return (
+    <Button
+      variant={variant}
+      className={cn("relative flex items-center justify-center", className)}
+      disabled={isLoading || props.disabled}
+      {...props}
+    >
+      {isLoading ? (
+        <Loader2 className="w-5 h-5 animate-spin" />
+      ) : (
+        children
+      )}
+    </Button>
+  );
+};
+
+export default CustomButton;
+
+
+
 //  start
 
 //backend
